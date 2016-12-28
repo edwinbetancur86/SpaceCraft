@@ -1,0 +1,352 @@
+Rem Setup sync
+autocam off
+Sync On
+hide mouse 
+
+rem make the menu screen appear
+load image "red menu background.jpg",1
+paste image 1,0,0
+
+rem make the icon highlighter for the start game option and position the box outline around start game option
+
+
+
+
+
+rem put some music for the menu
+load music "Pink Floyd - Is There Anybody Out There.mp3",1
+loop music 1
+wait key
+stop music 1
+gosub mapload
+
+
+rem map loadings
+mapload:
+
+
+
+load object "space craft map.x",9
+position object 9,0,0,0
+rem if needed put the declare staic object for 9 here 
+
+rem	objx#=object position x(9)
+rem	objy#=object position y(9)
+rem	objz#=object position z(9)
+rem	objsx#=object size x(9)/2.0
+rem	objsy#=object size y(9)/2.0
+rem	objsz#=object size z(9)/2.0
+rem	make object collision box 9,objx#-objsx#,objy#-objsy#,objz#-objsz#,objx#+objsx#,objy#+objsy#,objz#+objsz#,0
+
+rem set the background
+color backdrop 0
+
+
+
+
+
+gosub gameplay
+
+gameplay:
+
+
+rem set the ambient light for spookyness
+set ambient light 0
+
+rem do the lights
+make light 1
+set directional light 1,-5,-10,0
+color light 1,RGB(0,255,0)
+
+
+
+rem load the bad guys
+
+
+load object "H-Alien Mutant-Idle.x",10
+scale object 10,40000,50000,50000
+Fix object pivot 10 
+position object 10,0,-500,5
+loop object 10
+
+
+	objx#=object position x(10)
+	objy#=object position y(10)
+	objz#=object position z(10)
+	objsx#=object size x(10)/2.0
+	objsy#=object size y(10)/2.0
+	objsz#=object size z(10)/2.0
+	make object collision box 10,objx#-objsx#,objy#-objsy#,objz#-objsz#,objx#+objsx#,objy#+objsy#,objz#+objsz#,0
+
+
+
+
+
+
+
+
+rem load object mutant's dieing frame
+load object "H-Alien Mutant-Die.x",12
+hide object 12
+	
+	
+
+
+
+rem load mesh and put in front of screen
+
+load object "H-Colt-Static.x",7
+scale object 7,20000,20000,20000
+Fix object pivot 7
+position object 7,0,0,0
+rotate object 7,0,80,0
+
+
+
+
+
+
+rem make a collision sliding box for gun
+	objx#=object position x(7)
+	objy#=object position y(7)
+	objz#=object position z(7)
+	objsx#=object size x(7)/2.0
+	objsy#=object size y(7)/2.0
+	objsz#=object size z(7)/2.0
+	make object collision box 7,objx#-objsx#,objy#-objsy#,objz#-objsz#,objx#+objsx#,objy#+objsy#,objz#+objsz#,0
+disable object zdepth 7
+
+
+
+
+rem set the fog and the fog positions plus the enviroment
+rem Fog on 
+rem Fog distance 4000 
+rem Fog color RGB(128,128,128) 
+rem Color Backdrop RGB(128,128,128) 
+
+
+
+
+
+
+
+
+rem give inputs a variable-- code wont be needed now
+fspeed = 10
+bspeed = -10
+
+rem start the start point for object position within camera pay attention-->
+position object 7,0,0,0
+
+
+
+Rem Make bullet
+Make Object Sphere 11,2
+rem set the color to black after you finish test with white color
+rem color object 11,0
+Hide Object 11
+
+rem set the sound enviroment for the game
+Load sound "a strange pasture music.mp3",2
+Loop sound 2
+
+rem load 3d sound for the colt gun shot
+Load 3Dsound "colt gun shot.wav",3
+set sound volume 3,100
+
+
+Rem Position Listener
+Position Listener bX#,bY#+15,bZ#
+Rotate Listener 0,angle#,0
+
+
+Rem load particles
+Load Image "fire.bmp",2
+For x = 13 to 18
+	Make object plain x+10,5,5
+	Texture object x+10,2
+	Set object x+10,1,0,0
+	Ghost object on x+10
+Next x
+
+Rem intialize particle counter
+Pn=10
+
+
+
+
+
+
+Rem Main loop
+Do
+
+rem set mutant life health
+monsterlife=4
+
+
+
+
+
+
+
+
+
+	set camera range 1,50000
+	
+
+	rem Store old positions
+oldposx#=object position x(7)
+oldposy#=object position y(7)
+oldposz#=object position z(7)
+
+rem Control player object
+if upkey()=1 then move object 7,40
+if downkey()=1 then move object 7,-40
+if leftkey()=1 then yrotate object 7,wrapvalue(object angle y(7)-10)
+if rightkey()=1 then yrotate object 7,wrapvalue(object angle y(7)+10)
+
+
+
+
+
+
+rem the running command--	
+
+	
+	rem do the player running by the mouse click right---this code doesnt count for now
+	if mouseclick()=2 
+	if fspeed = 40
+	fspeed = 50:bspeed = -50
+	else
+	fspeed = 40:bspeed = -40
+	endif
+	endif
+
+
+
+
+
+rem Get current object position
+posx#=object position x(7)
+posy#=object position y(7)
+posz#=object position z(7)
+
+
+
+rem Handle sliding collision for player object with other objects
+
+if object collision(7,9)>0
+	dec posx#,get object collision x()
+	dec posy#,get object collision y()
+	dec posz#,get object collision z()
+	position object 7,posx#,posy#,posz#
+endif
+
+
+	
+
+rem Set a size for the player object
+s#=object size y(7)/2.0
+
+rem Ensure camera stays out of static collision boxes
+if get static collision hit(oldposx#-s#,oldposy#-s#,oldposz#-s#,oldposx#+s#,oldposy#+s#,oldposz#+s#,posx#-s#,posy#-s#,posz#-s#,posx#+s#,posy#+s#,posz#+s#)=1
+	dec posx#,get static collision x()
+	dec posy#,get static collision y()
+	dec posz#,get static collision z()	
+
+endif
+
+
+
+
+rem Update with new object position
+position object 7,posx#,posy#,posz#
+
+rem Use camera tracker to follow player object
+angle#=object angle y(7)
+camdist#=35.0 : camhigh#=posy#+20.0 : camfade#=1
+set camera to follow posx#,posy#,posz#,angle#,camdist#,camhigh#,camfade#,1
+
+rem Tilt camera down a little
+xrotate camera 1
+
+
+
+
+
+
+
+rem make the gun shoot
+if Spacekey()=1 and BulletLife=0
+	Position object 11,posx#,posy#+5,posz#
+	Set object to camera orientation 11
+	BulletLife = 25
+	Show object 11
+	play sound 3 
+Endif
+
+If BulletLife > 0
+	Dec BulletLife
+	Move object 11,60
+	bX#=Object position X(11)
+	bY#=Object position Y(11)
+	bZ#=Object position Z(11)
+
+	Rem The particle system
+	inc Pn
+	if Pn=20 then Pn=10
+	Scale object Pn,100,100,100
+	Position object Pn,bX#,bY#,bZ#
+	point object Pn,posx#,posy#,posz#
+	Zrotate object Pn,rnd(180)
+	
+	for x = 13 to 18
+		scale object int((Wrapvalue((Pn-9+x)*36))/36)+10,100+x*25,100+x*25,100+x*25		
+		print int((Wrapvalue((Pn+x)*36))/36)+10
+	next x
+
+
+
+
+	Position sound 3,bX#,bY#,bZ#
+	mX#=object position X(10)
+	mY#=object position Y(10)
+	mZ#=object position Z(10)
+	set cursor 10,10
+	if Sqrt((mX# - bX#)^2 + (mY#+25 - bY#)^2 + (mZ# - bZ#)^2) <20
+		text 240,220 ,"hit hit hit hit hit hit hit hit"
+		BulletLife = 0
+	Endif
+
+
+	If BulletLife = 0 then Hide object 11 : stop sound 3
+		
+		
+	Endif
+
+
+
+	If object collision(11,10)>0 :  stop object 10 : play object 12 : hide object 12 : 
+	 
+
+	Endif
+
+
+
+
+
+
+  rem a note- the camhigh value was 10 before
+
+
+	rem a note the camfade was 3.5 before
+
+	Rem Refresh Screen 
+
+	Sync
+Loop
+rem Restore object if ever leave this loop
+enable object zdepth 7
+
+
