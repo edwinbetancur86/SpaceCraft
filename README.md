@@ -1,2 +1,2 @@
 # SpaceCraftReal
-Game Development High School Project
+Game Development Project
